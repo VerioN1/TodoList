@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Popup from 'reactjs-popup';
+import axios from 'axios';
 
 export default class HandleEdit extends Component {
     constructor(props) {
@@ -17,7 +18,9 @@ export default class HandleEdit extends Component {
         const id = this.props.id
         const editDict ={id : id, action: this.state.editedItem}
         this.props.callback(editDict)
+        axios.put('http://localhost:3002/todos/'+id, [{propAction: "action", value: this.state.editedItem}]).then(res => console.log(res))
         this.setState({editedItem:''})
+        
     }
     
     handleKeypress = (event) => {

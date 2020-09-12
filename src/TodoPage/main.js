@@ -6,6 +6,7 @@ import {Alert} from 'reactstrap';
 import NewTodo from './NewTodo';
 import 'reactjs-popup/dist/index.css'
 import HandleEdit from './HandleEdit';
+
 //imported reactjs-popup, and font-awesome, and reactstrap
 
 export default class MainPage extends Component {
@@ -35,9 +36,11 @@ export default class MainPage extends Component {
             this.setState({
                 todoItems:[...this.state.todoItems, {action: task, done:false}],
                 visible : false
-            })}
+            })
+            axios.post('http://localhost:3002/todos',{action : task, done: false}).then(res => console.log(res))
+        }
         else{
-            this.setState({visible: !this.state.visible})
+            this.setState({visible: true})
         }
 
         
@@ -46,7 +49,7 @@ export default class MainPage extends Component {
     .filter(item => item.done === false).map( Item =>
         <tr key={Item.action}>
             <td>{Item.action}</td>
-            <td><button className="btn btn-success" onClick={this.doneButtonPressed(Item.id)}><i className="fa fa-check" /></button></td>
+            <td><input type="checkbox" checked={Item.done} onChange={() => this.doneButtonPressed(Item.id)} /></td>
             <td><HandleEdit id={Item.id} callback={this.updateTodoList}/></td>
         </tr>
     )
@@ -54,13 +57,13 @@ export default class MainPage extends Component {
     .filter(item => item.done === true).map(done =>
         <tr key={done.action} style={{ textDecorationLine: 'line-through'}}>
             <td>{done.action}</td>
-            <td><button className="btn btn-success" ><i className="fa fa-check" /></button></td>
+            <td><input type="checkbox" checked={done.done} onChange={() => this.doneButtonPressed(done.id)} /></td>
             <td><button className="btn btn-danger"><i className="fa fa-trash" /></button></td>
         </tr>
     )
     updateTodoList= (updatedItem) =>{
-        const empteyCheck = updatedItem.action.trim()
-        if(empteyCheck !== "" && updatedItem.action.length > 3){
+        const emptyInput = updatedItem.action.trim()
+        if(emptyInput !== "" && updatedItem.action.length > 3){
             this.setState({visible: false})
             this.setState(prev => ({
                 todoItems: prev.todoItems.map(item => item.id === updatedItem.id ? {...item, action: updatedItem.action} : item)
@@ -73,17 +76,18 @@ export default class MainPage extends Component {
     toggleAlert =() =>{
         this.setState({visible: !this.state.visible})
     }
-    doneButtonPressed =(id) =>{
-        this.setState(prev => ({
-            todoItems: prev.todoItems.map(item => item.id === id ? {...item, done: false}: item)
-        }))
-    }
+    
+    doneButtonPressed = (id) =>this.setState({
+        todoItems: this.state.todoItems.map(item =>
+            item.id === id ? {...item, done: !item.done}: item)
+    })
     render= () =>
     <div className="row">
         <div className="container">
              <NewTodo callback={this.createNewITem}/>
             <Alert isOpen={this.state.visible} color="danger" toggle={this.toggleAlert}>It's impartive to insert a valid input</Alert>
              <TodoTable todoBody={this.todoTableRow()}/>
+             <br/><br/>
              <DoneTable doneBody={this.doneTableRow()}/>
         </div>
         
